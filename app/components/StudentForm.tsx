@@ -17,7 +17,8 @@ import {
 import { useEffect, useState } from "react";
 import { Student } from "../lib/types/StudentType";
 import { Seat } from "../lib/types/SeatType";
-import { formatTimeLabel, timeToMinutes } from "@/app/lib/utils";
+import { createStudent, updateStudent } from "../actions/studentActions";
+import { formatTimeLabel, timeToMinutes, minutesToTime } from "@/app/lib/utils";
 import { getAllSeats } from "../actions/seatActions";
 
 interface StudentFormProps {
@@ -49,9 +50,34 @@ export default function StudentForm({ editingStudent, onReset }: StudentFormProp
 		}
 	}, [editingStudent]);
 
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+
+		const studentData = {
+			name,
+			days,
+			startTime: minutesToTime(timeRange[0]),
+			endTime: minutesToTime(timeRange[1]),
+			seatId: selectedSeat || null,
+		};
+
+		try {
+			if (editingStudent) {
+				await updateStudent(editingStudent.id, studentData);
+			} else {
+				await createStudent(studentData);
+			}
+		} catch (error) {
+			console.error("Failed to save student:", error);
+		}
+	};
+
 	const handleReset = () => {
 		setName("");
+		setDays([]);
 		setTimeRange([0, 510]);
+		setSelectedRoom("");
+		setSelectedSeats("");
 		onReset();
 	};
 
@@ -65,7 +91,7 @@ export default function StudentForm({ editingStudent, onReset }: StudentFormProp
 	];
 
 	return (
-		<Box id='form' component='form' autoComplete='off' sx={{ flex: 1, p: 2, display: "flex", flexDirection: "column", gap: 2 }}>
+		<Box id='form' component='form' autoComplete='off' onSubmit={handleSubmit} sx={{ flex: 1, p: 2, display: "flex", flexDirection: "column", gap: 2 }}>
 			<Typography variant='h6'>{editingStudent ? "Redigera Deltagare" : "Ny Deltagare"}</Typography>
 			<TextField label='Namn' required value={name} onChange={(e) => setName(e.target.value)} />
 			<Box>
@@ -96,7 +122,7 @@ export default function StudentForm({ editingStudent, onReset }: StudentFormProp
 			</Box>
 
 			<Box>
-				<Button variant='outlined' type='submit'>
+				<Button variant='contained' type='submit'>
 					Spara
 				</Button>
 				{editingStudent && (
