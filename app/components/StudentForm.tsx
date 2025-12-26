@@ -13,11 +13,15 @@ import {
 	DialogActions,
 	DialogTitle,
 	Slider,
+	FormControl,
+	InputLabel,
+	Select,
+	MenuItem,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Student } from "../lib/types/StudentType";
 import { Seat } from "../lib/types/SeatType";
-import { createStudent, updateStudent } from "../actions/studentActions";
+import { createStudent, getAllStudents, updateStudent } from "../actions/studentActions";
 import { formatTimeLabel, timeToMinutes, minutesToTime } from "@/app/lib/utils";
 import { getAllSeats } from "../actions/seatActions";
 
@@ -28,18 +32,41 @@ interface StudentFormProps {
 
 export default function StudentForm({ editingStudent, onReset }: StudentFormProps) {
 	const [seats, setSeats] = useState<Seat[]>([]);
+	const [students, setStudents] = useState<Student[]>([]);
 	const [selectedRoom, setSelectedRoom] = useState<string>("");
-	const [selectedSeat, setSelectedSeats] = useState<string>("");
+	const [selectedSeat, setSelectedSeat] = useState<string>("");
 	const [name, setName] = useState("");
-	const [days, setDays] = useState<string[]>([""]);
+	const [days, setDays] = useState<string[]>([]);
 	const [timeRange, setTimeRange] = useState<number[]>([0, 510]);
 
 	const rooms = [...new Set(seats.map((s) => s.room))];
 
-	const avalibleSeats = selectedRoom ? seats.filter((s) => s.room === selectedRoom) : [];
+	const availableSeats = selectedRoom
+		? seats.filter((seat) => {
+				if (seat.room !== selectedRoom) return false;
+				if (days.length === 0) return true;
+
+				const hasConflict = students.some((student) => {
+					if (student.seatId !== seat.id) return false;
+					if (editingStudent && student.id === editingStudent.id) return false;
+
+					const hasOverlappingDays = days.some((day) => student.days.includes(day));
+					if (!hasOverlappingDays) return false;
+
+					const selectedStart = minutesToTime(timeRange[0]);
+					const selectedEnd = minutesToTime(timeRange[1]);
+					const timesOverlap =
+						// Change this to <= if it gets annoying...
+						selectedStart < student.endTime && selectedEnd > student.startTime;
+					return timesOverlap;
+				});
+				return !hasConflict;
+		  })
+		: [];
 
 	useEffect(() => {
 		getAllSeats().then(setSeats);
+		getAllStudents().then(setStudents);
 	}, []);
 
 	useEffect(() => {
@@ -48,7 +75,15 @@ export default function StudentForm({ editingStudent, onReset }: StudentFormProp
 			setTimeRange([timeToMinutes(editingStudent.startTime), timeToMinutes(editingStudent.endTime)]);
 			setDays(editingStudent.days);
 		}
-	}, [editingStudent]);
+
+		if (editingStudent?.seatId) {
+			const studentSeat = seats.find((s) => s.id === editingStudent.seatId);
+			if (studentSeat) {
+				setSelectedRoom(studentSeat.room);
+				setSelectedSeat(editingStudent.seatId);
+			}
+		}
+	}, [editingStudent, seats]);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -67,6 +102,7 @@ export default function StudentForm({ editingStudent, onReset }: StudentFormProp
 			} else {
 				await createStudent(studentData);
 			}
+			handleReset();
 		} catch (error) {
 			console.error("Failed to save student:", error);
 		}
@@ -77,7 +113,7 @@ export default function StudentForm({ editingStudent, onReset }: StudentFormProp
 		setDays([]);
 		setTimeRange([0, 510]);
 		setSelectedRoom("");
-		setSelectedSeats("");
+		setSelectedSeat("");
 		onReset();
 	};
 
@@ -119,6 +155,42 @@ export default function StudentForm({ editingStudent, onReset }: StudentFormProp
 					<ToggleButton value='thu'>Tor</ToggleButton>
 					<ToggleButton value='fri'>Fre</ToggleButton>
 				</ToggleButtonGroup>
+			</Box>
+			<Box>
+				<FormControl fullWidth>
+					<InputLabel>Rum</InputLabel>
+					<Select
+						value={selectedRoom}
+						label='Rum'
+						onChange={(e) => {
+							setSelectedRoom(e.target.value);
+							setSelectedSeat("");
+						}}>
+						<MenuItem value=''>
+							<em>Välj rum</em>
+						</MenuItem>
+						{rooms.map((room) => (
+							<MenuItem key={room} value={room}>
+								{room}
+							</MenuItem>
+						))}
+					</Select>
+				</FormControl>
+			</Box>
+			<Box>
+				<FormControl fullWidth disabled={!selectedRoom}>
+					<InputLabel>Plats</InputLabel>
+					<Select value={selectedSeat} label='Plats' onChange={(e) => setSelectedSeat(e.target.value)}>
+						<MenuItem value=''>
+							<em>Ingen plats</em>
+						</MenuItem>
+						{availableSeats.map((seat) => (
+							<MenuItem key={seat.id} value={seat.id}>
+								{seat.label}
+							</MenuItem>
+						))}
+					</Select>
+				</FormControl>
 			</Box>
 
 			<Box>

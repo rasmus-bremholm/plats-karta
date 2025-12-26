@@ -10,7 +10,6 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS seats (
     id TEXT PRIMARY KEY,
     label TEXT,
-    location TEXT NOT NULL,
     room TEXT NOT NULL,
     x INTEGER NOT NULL,
     y INTEGER NOT NULL,
@@ -31,3 +30,5 @@ db.exec(`
 console.log("Database created @:", dbPath);
 
 export default db;
+
+// location TEXT NOT NULL,
