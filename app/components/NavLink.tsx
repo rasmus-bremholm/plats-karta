@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material";
+import { ListItem, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
 import Link from "next/link";
 
 interface NavLinkProps {
@@ -9,11 +9,11 @@ interface NavLinkProps {
 
 export default function NavLink({ href, icon, label }: NavLinkProps) {
 	return (
-		<Link href={href} style={{ textDecoration: "none", color: "inherit" }}>
-			<Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-				{icon}
-				<Typography>{label}</Typography>
-			</Box>
-		</Link>
+		<ListItem disablePadding>
+			<ListItemButton component={Link} href={href}>
+				<ListItemIcon>{icon}</ListItemIcon>
+				<ListItemText primary={label} />
+			</ListItemButton>
+		</ListItem>
 	);
 }
