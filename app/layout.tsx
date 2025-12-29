@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import ThemeRegistry from "./lib/theme/ThemeRegistry";
 import { Container } from "@mui/material";
+import Sidebar from "./components/Sidebar";
 
 export const metadata: Metadata = {
 	title: "Create Next App",
@@ -17,6 +18,7 @@ export default function RootLayout({
 		<html lang='en'>
 			<body>
 				<ThemeRegistry>
+					<Sidebar />
 					<Container maxWidth='xl'>{children}</Container>
 				</ThemeRegistry>
 			</body>
