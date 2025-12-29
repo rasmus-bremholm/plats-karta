@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import Seat from "./components/Seat";
+import Seat from "./components/SeatBox";
 
 export default function Home() {
 	const [roomImage, setRoomImage] = useState("/matsalen.svg");
