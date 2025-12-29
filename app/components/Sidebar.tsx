@@ -1,22 +1,15 @@
 "use client";
 import { Box, Stack, Divider } from "@mui/material";
-import { Home, Build, AddCircle } from "@mui/icons-material";
-import Link from "next/link";
+import { HomeOutlined, BuildOutlined, AddCircleOutline } from "@mui/icons-material";
+import NavLink from "./NavLink";
 
 export default function Sidebar() {
 	return (
 		<Box component='nav' sx={{ mt: 2, mx: 2 }}>
-			<Stack direction='row' sx={{ display: "flex", justifyContent: "flex-start", alignItems: "center", gap: "12px" }}>
-				<Link href='/'>
-					<Home /> Hem
-				</Link>
-				<Divider orientation='vertical' />
-				<Link href='/'>
-					<Build /> Edit
-				</Link>
-				<Link href='/dashboard'>
-					<AddCircle /> Dashboard
-				</Link>
+			<Stack direction='column' spacing={2} divider={<Divider />}>
+				<NavLink href='/' icon={<HomeOutlined />} label='Hem' />
+				<NavLink href='/' icon={<BuildOutlined />} label='Redigera' />
+				<NavLink href='/dashboard' icon={<AddCircleOutline />} label='Dashboard' />
 			</Stack>
 		</Box>
 	);

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import ThemeRegistry from "./lib/theme/ThemeRegistry";
-import { Container } from "@mui/material";
+import { Container, Box } from "@mui/material";
 import Sidebar from "./components/Sidebar";
 
 export const metadata: Metadata = {
@@ -18,8 +18,12 @@ export default function RootLayout({
 		<html lang='en'>
 			<body>
 				<ThemeRegistry>
-					<Sidebar />
-					<Container maxWidth='xl'>{children}</Container>
+					<Box sx={{ display: "flex", minHeight: "100vh" }}>
+						<Sidebar />
+						<Container maxWidth='xl' sx={{ flex: 1 }}>
+							{children}
+						</Container>
+					</Box>
 				</ThemeRegistry>
 			</body>
 		</html>
